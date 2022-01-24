@@ -1,5 +1,5 @@
 module.exports = {
-  pathPrefix: '/finai-docs',
+  pathPrefix: `/finai-docs`,
   siteMetadata: {
     siteUrl: "https://finai-docs.github.io",
     title: "FinAI Docs",
