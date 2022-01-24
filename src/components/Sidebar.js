@@ -44,9 +44,9 @@ export default function Sidebar() {
       <div><a href="/" id='logo'>{title}</a></div>
       <div className="sidemenu-container">
         <SideMenuItem itemName='Home' link='/' />
-        <SideMenuItem itemName='Admin Guide' subItems={adminDocs} />
-        <SideMenuItem itemName='Developer Guide' subItems={developerDocs}/>
-        <SideMenuItem itemName='Other Guides' subItems={miscDocs}/>
+        { adminDocs.length > 0 && <SideMenuItem itemName='Admin Guide' subItems={adminDocs} />}
+        { developerDocs.length > 0 && <SideMenuItem itemName='Developer Guide' subItems={developerDocs}/>}
+        { miscDocs.length > 0 && <SideMenuItem itemName='Other Guides' subItems={miscDocs}/>}
       </div>
     </div>
   );

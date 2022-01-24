@@ -1,0 +1,114 @@
+name: Publish website to GitHub Pages
+on:
+  push:
+    brances:
+      - main
+jobs:
+  build:
+    name: Publish static site to gh pages
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'ci skip')"
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - name: Install
+        run: npm install --save
+      - name: Build
+        run: npm run build
+      - name: Set Release tag
+        id: tag
+        run: |
+          PROJECT_VERSION=$(cat ./package.json | jq .version | sed 's/"//g')
+          GIT_TAG=$PROJECT_VERSION
+          echo ::set-output name=git_tag::"$GIT_TAG"
+          echo $GIT_TAG
+          zip -r $GIT_TAG.zip public
+          tar -czvf $GIT_TAG.tar.gz public
+          ls -altr
+      - name: Create Release
+        uses: softprops/action-gh-release@v0.1.14
+        with:
+          prerelease: true
+          tag_name: ${{ steps.tag.outputs.git_tag }}
+          files: |
+            ${{ steps.tag.outputs.git_tag }}.zip
+            ${{ steps.tag.outputs.git_tag }}.tar.gz
+          generate_release_notes: true
+      - name: Deploy to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+      - name: Update version
+        id: git_version
+        run: |
+          CURR_VERSION=${{ steps.tag.outputs.git_tag }}
+          IFS='. ' read -r -a array <<< $CURR_VERSION
+          UPDATE_TYPE="PATCH"
+          NEW_VERSION=""
+          case "${{ github.event.head_commit.message }}" in
+            *PATCH*)
+              UPDATE_TYPE="PATCH"
+              ;;
+
+            *MINOR*)
+              UPDATE_TYPE="MINOR"
+              ;;
+
+            *MAJOR*)
+              UPDATE_TYPE="MAJOR"
+              ;;
+          esac
+          case "$UPDATE_TYPE" in
+            PATCH)
+              NEW_VERSION="${array[0]}.${array[1]}.$(expr ${array[2]} + 1)"
+              ;;
+            MINOR)
+              NEW_VERSION="${array[0]}.$(expr ${array[1]} + 1).${array[2]}"
+              ;;
+            MAJOR)
+              NEW_VERSION="$(expr ${array[0]} + 1).${array[1]}.${array[2]}"
+              ;;
+          esac
+          echo ::set-output name=new_version::"$NEW_VERSION"
+          jq '.version = $NEW_VERSION' package.json
+      - name: Install before semantic versioning
+        run: npm install --save
+      - name: Create Pull Request for Semantic versioning
+        uses: peter-evans/create-pull-request@v3
+        id: cpr
+        with:
+          add-paths: package.json package-lock.json
+          commit-message: [ci skip] semantic_versioning from gitbot.
+          committer: FinAIGitHubBot <noreply@finaibotgithub.com>
+          branch: ci_version_increment
+          delete-branch: true
+          title: Semantic Versioning CI Bot
+          labels: automerge
+          body: Automated versioning from GitHub Actions. Versioned to ${{ steps.git_version.outputs.new_version }}
+      - name: Approve PR
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const repository = context.repo
+            await github.rest.pulls.createReview({
+              event: "APPROVE",
+              owner: repository.owner,
+              repo: repository.repo,
+              pull_number: ${{ steps.cpr.outputs.pull-request-number }},
+            })
+      - name: Merge PR
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const repository = context.repo
+            await github.rest.pulls.merge({
+              commit_title: "Bumping version to ${{ steps.git_version.outputs.new_version }}. [ci skip]",
+              commit_message: "ci skip",
+              merge_method: "merge",
+              owner: repository.owner,
+              repo: repository.repo,
+              pull_number: ${{ steps.cpr.outputs.pull-request-number }},
+            })
