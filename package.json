@@ -10,9 +10,10 @@
   "scripts": {
     "develop": "gatsby develop",
     "start": "gatsby develop",
-    "build": "gatsby build",
+    "build": "PREFIX_PATH=true gatsby build",
     "serve": "gatsby serve",
-    "clean": "gatsby clean"
+    "clean": "gatsby clean",
+    "deploy:gh-pages": "gatsby build --prefix-paths && gh-pages -d public"
   },
   "dependencies": {
     "@deckdeckgo/highlight-code": "^4.0.0",
@@ -25,6 +26,7 @@
     "gatsby-source-filesystem": "^4.4.0",
     "gatsby-transformer-remark": "^5.4.0",
     "gatsby-transformer-sharp": "^4.4.0",
+    "gh-pages": "^3.2.3",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-icons": "^4.3.1"
