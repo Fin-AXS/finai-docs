@@ -80,8 +80,8 @@ jobs:
         uses: peter-evans/create-pull-request@v3
         id: cpr
         with:
-          add-paths: package.json package-lock.json
-          commit-message: [ci skip] semantic_versioning from gitbot.
+          add-paths: package*.json
+          commit-message: ci skip semantic_versioning from gitbot.
           committer: FinAIGitHubBot <noreply@finaibotgithub.com>
           branch: ci_version_increment
           delete-branch: true
