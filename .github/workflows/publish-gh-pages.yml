@@ -1,7 +1,7 @@
 name: Publish website to GitHub Pages
 on:
   push:
-    brances:
+    branches:
       - main
 jobs:
   build:
@@ -46,34 +46,10 @@ jobs:
         run: |
           CURR_VERSION=${{ steps.tag.outputs.git_tag }}
           IFS='. ' read -r -a array <<< $CURR_VERSION
-          UPDATE_TYPE="PATCH"
-          NEW_VERSION=""
-          case "${{ github.event.head_commit.message }}" in
-            *PATCH*)
-              UPDATE_TYPE="PATCH"
-              ;;
-
-            *MINOR*)
-              UPDATE_TYPE="MINOR"
-              ;;
-
-            *MAJOR*)
-              UPDATE_TYPE="MAJOR"
-              ;;
-          esac
-          case "$UPDATE_TYPE" in
-            PATCH)
-              NEW_VERSION="${array[0]}.${array[1]}.$(expr ${array[2]} + 1)"
-              ;;
-            MINOR)
-              NEW_VERSION="${array[0]}.$(expr ${array[1]} + 1).${array[2]}"
-              ;;
-            MAJOR)
-              NEW_VERSION="$(expr ${array[0]} + 1).${array[1]}.${array[2]}"
-              ;;
-          esac
+          NEW_VERSION="${array[0]}.${array[1]}.$(expr ${array[2]} + 1)"
           echo ::set-output name=new_version::"$NEW_VERSION"
-          jq '.version = $NEW_VERSION' package.json
+          tmp=$(mktemp)
+          jq --arg variable "$NEW_VERSION" '.version = $variable' pkg.json > "$tmp" && mv "$tmp" pkg.json && rm -rf "$tmp"
       - name: Install before semantic versioning
         run: npm install --save
       - name: Create Pull Request for Semantic versioning
@@ -81,7 +57,7 @@ jobs:
         id: cpr
         with:
           add-paths: package.json package-lock.json
-          commit-message: [ci skip] semantic_versioning from gitbot.
+          commit-message: ci skip _ semantic_versioning from gitbot.
           committer: FinAIGitHubBot <noreply@finaibotgithub.com>
           branch: ci_version_increment
           delete-branch: true
