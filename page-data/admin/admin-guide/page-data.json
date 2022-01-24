@@ -1,0 +1,5 @@
+{
+    "componentChunkName": "component---src-templates-documentation-js",
+    "path": "/admin/admin-guide",
+    "result": {"data":{"markdownRemark":{"html":"<h1>Admin Guide</h1>","frontmatter":{"title":"Admin Guide","stack":null,"tag":"admin","slug":"admin-guide","description":null},"timeToRead":1}},"pageContext":{"slug":"admin-guide"}},
+    "staticQueryHashes": ["2642479948"]}
