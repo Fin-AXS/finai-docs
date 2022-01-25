@@ -64,27 +64,27 @@ jobs:
           title: Semantic Versioning CI Bot
           labels: automerge
           body: Automated versioning from GitHub Actions. Versioned to ${{ steps.git_version.outputs.new_version }}
-      - name: Approve PR
-        uses: actions/github-script@v5
-        with:
-          script: |
-            const repository = context.repo
-            await github.rest.pulls.createReview({
-              event: "APPROVE",
-              owner: repository.owner,
-              repo: repository.repo,
-              pull_number: ${{ steps.cpr.outputs.pull-request-number }},
-            })
-      - name: Merge PR
-        uses: actions/github-script@v5
-        with:
-          script: |
-            const repository = context.repo
-            await github.rest.pulls.merge({
-              commit_title: "Bumping version to ${{ steps.git_version.outputs.new_version }}. [ci skip]",
-              commit_message: "ci skip",
-              merge_method: "merge",
-              owner: repository.owner,
-              repo: repository.repo,
-              pull_number: ${{ steps.cpr.outputs.pull-request-number }},
-            })
+      # - name: Approve PR
+      #   uses: actions/github-script@v5
+      #   with:
+      #     script: |
+      #       const repository = context.repo
+      #       await github.rest.pulls.createReview({
+      #         event: "APPROVE",
+      #         owner: repository.owner,
+      #         repo: repository.repo,
+      #         pull_number: ${{ steps.cpr.outputs.pull-request-number }},
+      #       })
+      # - name: Merge PR
+      #   uses: actions/github-script@v5
+      #   with:
+      #     script: |
+      #       const repository = context.repo
+      #       await github.rest.pulls.merge({
+      #         commit_title: "Bumping version to ${{ steps.git_version.outputs.new_version }}. [ci skip]",
+      #         commit_message: "ci skip",
+      #         merge_method: "merge",
+      #         owner: repository.owner,
+      #         repo: repository.repo,
+      #         pull_number: ${{ steps.cpr.outputs.pull-request-number }},
+      #       })
